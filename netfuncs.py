@@ -15,17 +15,15 @@ def ipv4_to_value(ipv4_addr):
     ipv4_addr: "1.2.3.4"
     return:    16909060  (Which is 0x01020304 hex)
     """
-    # Split the IP address into its four parts
-    parts = ipv4_addr.split('.')
+    value = 0
 
-    # Convert each part to binary and pad it to 8 bits
-    binary_parts = [bin(int(part))[2:].zfill(8) for part in parts]
-
-    # Join the binary parts together into a single binary string
-    binary_string = ''.join(binary_parts)
-
-    # Convert the binary string to an integer
-    value = int(binary_string, 2)
+    # split the ip into a list of strings
+    # left shift each octet by the appropriate number of bits
+    # convert the octet to an integer
+    # bitwise OR each octet together
+    # return the value
+    for i in range(4):
+        value |= int(ipv4_addr.split('.')[i]) << (8 * (3 - i))
 
     return value
 
@@ -45,24 +43,17 @@ def value_to_ipv4(addr):
     addr:   0x01020304 0b00000001000000100000001100000100 16909060
     return: "1.2.3.4"
     """
-    if isinstance(addr, str):
-        if addr.startswith('0b'):
-            addr = int(addr, 2)
-        elif addr.startswith('0x'):
-            addr = int(addr, 16)
-        else:
-            addr = int(addr)
+    ip_addr = []
 
-    # Convert the integer to binary and pad it to 32 bits
-    binary_string = bin(addr)[2:].zfill(32)
+    # right shift the address by the appropriate number of bits
+    # bitwise AND the address with 0xff to get the BYTE
+    # append the byte to the ip_addr list
+    # join the ip_addr list with dots
+    for i in range(4):
+        octet = (addr >> (8 * (3 - i))) & 0xff
+        ip_addr.append(str(octet))
 
-    # Split the binary string into 8-bit chunks and convert each to an int
-    chunks = [int(binary_string[i:i+8], 2) for i in range(0, 32, 8)]
-
-    # Join the list of integers with dots to create the IP address string
-    ip_addr = '.'.join(map(str, chunks))
-
-    return ip_addr
+    return '.'.join(ip_addr)
 
 
 def get_subnet_mask_value(slash):
